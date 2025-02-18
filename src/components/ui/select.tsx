@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Language } from "@/lib/translations";
 
 export interface SelectProps
 	extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
