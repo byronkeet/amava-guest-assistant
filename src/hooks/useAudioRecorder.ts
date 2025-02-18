@@ -9,26 +9,31 @@ export const useAudioRecorder = () => {
 	const chunksRef = useRef<Blob[]>([]);
 
 	useEffect(() => {
-		if (
-			typeof navigator === "undefined" ||
-			!navigator.mediaDevices ||
-			!navigator.mediaDevices.getUserMedia
-		) {
-			setIsSupported(false);
-			return;
-		}
+		// Check if MediaRecorder and necessary APIs are available
+		const checkSupport = async () => {
+			const hasMediaDevices = !!(
+				navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+			);
+			const hasMediaRecorder = typeof MediaRecorder !== "undefined";
 
-		// Request microphone permission to ensure the API is available
-		navigator.mediaDevices
-			.getUserMedia({ audio: true })
-			.then((stream) => {
-				stream.getTracks().forEach((track) => track.stop()); // Clean up
+			if (!hasMediaDevices || !hasMediaRecorder) {
+				setIsSupported(false);
+				return;
+			}
+
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio: true,
+				});
+				stream.getTracks().forEach((track) => track.stop());
 				setIsSupported(true);
-			})
-			.catch((err) => {
+			} catch (err) {
 				console.error("Media devices error:", err);
 				setIsSupported(false);
-			});
+			}
+		};
+
+		checkSupport();
 	}, []);
 
 	const startRecording = async () => {
@@ -39,17 +44,16 @@ export const useAudioRecorder = () => {
 
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true,
+				audio: {
+					echoCancellation: true,
+					noiseSuppression: true,
+					sampleRate: 44100,
+				},
 			});
 
-			// Try to use audio/mp4 for iOS, fallback to webm
-			const mimeType = MediaRecorder.isTypeSupported("audio/mp4")
-				? "audio/mp4"
-				: "audio/webm;codecs=opus";
-
+			// For iOS compatibility, we'll use a more basic configuration
 			const mediaRecorder = new MediaRecorder(stream, {
-				mimeType,
-				audioBitsPerSecond: 128000,
+				mimeType: "audio/webm",
 			});
 
 			mediaRecorderRef.current = mediaRecorder;
@@ -61,13 +65,14 @@ export const useAudioRecorder = () => {
 				}
 			};
 
-			mediaRecorder.start();
+			// Request data every 250ms to ensure we get the audio
+			mediaRecorder.start(250);
 			setIsRecording(true);
 		} catch (error) {
-			console.error("Error accessing microphone:", error);
+			console.error("Error starting recording:", error);
 			if (error instanceof Error) {
 				alert(
-					`Could not access microphone: ${error.message}. Please ensure you've granted microphone permissions.`
+					`Recording failed: ${error.message}. Please ensure you've granted microphone permissions.`
 				);
 			}
 		}
@@ -80,26 +85,39 @@ export const useAudioRecorder = () => {
 				return;
 			}
 
-			mediaRecorderRef.current.onstop = () => {
-				const blob = new Blob(chunksRef.current, {
-					type:
-						mediaRecorderRef.current?.mimeType ||
-						"audio/webm;codecs=opus",
-				});
-				const reader = new FileReader();
-				reader.onloadend = () => {
-					const base64data = reader.result as string;
-					resolve(base64data);
-				};
-				reader.readAsDataURL(blob);
+			mediaRecorderRef.current.onstop = async () => {
+				try {
+					const blob = new Blob(chunksRef.current, {
+						type: "audio/webm",
+					});
 
-				// Stop all tracks
-				mediaRecorderRef.current?.stream
-					.getTracks()
-					.forEach((track) => track.stop());
+					// Convert to base64
+					const reader = new FileReader();
+					reader.onloadend = () => {
+						const base64data = reader.result as string;
+						resolve(base64data);
+					};
+					reader.onerror = () => {
+						console.error("Error reading audio data");
+						resolve("");
+					};
+					reader.readAsDataURL(blob);
+				} catch (error) {
+					console.error("Error processing audio:", error);
+					resolve("");
+				} finally {
+					// Clean up
+					mediaRecorderRef.current?.stream
+						.getTracks()
+						.forEach((track) => track.stop());
+				}
 			};
 
-			mediaRecorderRef.current.stop();
+			try {
+				mediaRecorderRef.current.stop();
+			} catch (error) {
+				console.error("Error stopping recording:", error);
+			}
 			setIsRecording(false);
 		});
 	};
