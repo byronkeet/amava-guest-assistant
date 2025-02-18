@@ -4,16 +4,21 @@ import { useState } from "react";
 import { Mic, ChevronRight, Square } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslations } from "@/lib/translations";
 
 interface ChatInputProps {
 	onSendMessage?: (message: string, isUserMessage?: boolean) => void;
+	placeholder?: string;
 }
 
-export function ChatInput({ onSendMessage }: ChatInputProps) {
+export function ChatInput({ onSendMessage, placeholder }: ChatInputProps) {
 	const [message, setMessage] = useState("");
 	const { isRecording, isSupported, startRecording, stopRecording } =
 		useAudioRecorder();
 	const [isProcessing, setIsProcessing] = useState(false);
+	const { language } = useLanguage();
+	const t = useTranslations(language);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -113,7 +118,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
 					type='text'
 					value={message}
 					onChange={(e) => setMessage(e.target.value)}
-					placeholder='Ask a question...'
+					placeholder={placeholder || t.askQuestion}
 					disabled={isProcessing}
 					className='w-full p-4 pr-24 rounded-full border border-gray-300 focus:outline-none focus:border-[#B5854B] disabled:opacity-50'
 				/>

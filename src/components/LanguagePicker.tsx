@@ -1,17 +1,16 @@
 "use client";
 
 import { Select } from "@/components/ui/select";
-
-const languages = [
-	{ value: "english", label: "English" },
-	{ value: "french", label: "French" },
-	{ value: "german", label: "German" },
-];
+import { languages } from "@/lib/translations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function LanguagePicker() {
+	const { language, setLanguage } = useLanguage();
+
 	return (
 		<Select
-			defaultValue='english'
+			value={language}
+			onChange={(e) => setLanguage(e.target.value as any)}
 			className='w-[100px]'
 			options={languages}
 		/>

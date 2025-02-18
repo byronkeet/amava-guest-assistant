@@ -2,17 +2,15 @@
 
 import { Button } from "./ui/button";
 
-const prompts = [
-	"Download the welcome pack",
-	"What is the wifi password",
-	"What to do in case of a problem in your room",
-];
-
 interface SuggestedPromptsProps {
+	prompts: string[];
 	onSelectPrompt?: (prompt: string) => void;
 }
 
-export function SuggestedPrompts({ onSelectPrompt }: SuggestedPromptsProps) {
+export function SuggestedPrompts({
+	prompts,
+	onSelectPrompt,
+}: SuggestedPromptsProps) {
 	return (
 		<div className='flex gap-4 overflow-x-auto py-4 px-2 w-full max-w-xl mx-auto'>
 			{prompts.map((prompt) => (
