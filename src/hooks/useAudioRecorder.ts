@@ -50,8 +50,8 @@ export const useAudioRecorder = () => {
 				},
 			});
 
-			// For iOS Safari, we need to use a basic MediaRecorder without mimeType
-			const mediaRecorder = new MediaRecorder(stream);
+			const options = { mimeType: "audio/mp4" };
+			const mediaRecorder = new MediaRecorder(stream, options);
 
 			mediaRecorderRef.current = mediaRecorder;
 			chunksRef.current = [];
@@ -62,14 +62,35 @@ export const useAudioRecorder = () => {
 				}
 			};
 
-			// Request data more frequently on iOS
 			mediaRecorder.start(100);
 			setIsRecording(true);
-		} catch (error) {
-			console.error("Error starting recording:", error);
-			if (error instanceof Error) {
+		} catch {
+			// If mp4 fails, try without specifying format
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio: {
+						echoCancellation: true,
+						noiseSuppression: true,
+						sampleRate: 44100,
+					},
+				});
+
+				const mediaRecorder = new MediaRecorder(stream);
+				mediaRecorderRef.current = mediaRecorder;
+				chunksRef.current = [];
+
+				mediaRecorder.ondataavailable = (e) => {
+					if (e.data.size > 0) {
+						chunksRef.current.push(e.data);
+					}
+				};
+
+				mediaRecorder.start(100);
+				setIsRecording(true);
+			} catch (fallbackError) {
+				console.error("Error starting recording:", fallbackError);
 				alert(
-					`Recording failed: ${error.message}. Please ensure you've granted microphone permissions.`
+					`Recording failed. Please ensure you've granted microphone permissions and are using a supported browser.`
 				);
 			}
 		}
@@ -84,7 +105,10 @@ export const useAudioRecorder = () => {
 
 			mediaRecorderRef.current.onstop = async () => {
 				try {
-					const blob = new Blob(chunksRef.current);
+					const blob = new Blob(chunksRef.current, {
+						type: "audio/mp4",
+					});
+
 					const reader = new FileReader();
 					reader.onloadend = () => {
 						const base64data = reader.result as string;
