@@ -41,7 +41,17 @@ export const useAudioRecorder = () => {
 			const stream = await navigator.mediaDevices.getUserMedia({
 				audio: true,
 			});
-			const mediaRecorder = new MediaRecorder(stream);
+
+			// Try to use audio/mp4 for iOS, fallback to webm
+			const mimeType = MediaRecorder.isTypeSupported("audio/mp4")
+				? "audio/mp4"
+				: "audio/webm;codecs=opus";
+
+			const mediaRecorder = new MediaRecorder(stream, {
+				mimeType,
+				audioBitsPerSecond: 128000,
+			});
+
 			mediaRecorderRef.current = mediaRecorder;
 			chunksRef.current = [];
 
@@ -72,7 +82,9 @@ export const useAudioRecorder = () => {
 
 			mediaRecorderRef.current.onstop = () => {
 				const blob = new Blob(chunksRef.current, {
-					type: "audio/webm;codecs=opus",
+					type:
+						mediaRecorderRef.current?.mimeType ||
+						"audio/webm;codecs=opus",
 				});
 				const reader = new FileReader();
 				reader.onloadend = () => {
