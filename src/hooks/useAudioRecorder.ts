@@ -50,7 +50,7 @@ export const useAudioRecorder = () => {
 				},
 			});
 
-			const options = { mimeType: "audio/webm;codecs=opus" };
+			const options = { mimeType: "audio/mp4" };
 			const mediaRecorder = new MediaRecorder(stream, options);
 			mediaRecorderRef.current = mediaRecorder;
 			chunksRef.current = [];
@@ -81,7 +81,7 @@ export const useAudioRecorder = () => {
 			mediaRecorderRef.current.onstop = async () => {
 				try {
 					const blob = new Blob(chunksRef.current, {
-						type: "audio/webm;codecs=opus",
+						type: "audio/mp4",
 					});
 
 					const reader = new FileReader();
