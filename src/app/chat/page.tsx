@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Header } from "@/components/layout/Header";
 import { ChatInput } from "@/components/ChatInput";
 import { getSessionId, saveMessages, loadMessages } from "@/lib/session";
+import DOMPurify from "dompurify";
 
 export default function ChatPage() {
 	const [messages, setMessages] = useState<
@@ -100,10 +101,12 @@ export default function ChatPage() {
 	}, [messages]);
 
 	return (
-		<div className='min-h-screen flex flex-col'>
-			<Header />
-			<main className='flex-1 p-4 bg-gray-50'>
-				<div className='max-w-xl mx-auto space-y-4'>
+		<div className='min-h-screen flex flex-col bg-white'>
+			<div className='sticky top-0 z-10 bg-white border-b'>
+				<Header />
+			</div>
+			<main className='flex-1 overflow-y-auto py-4'>
+				<div className='max-w-xl mx-auto space-y-4 px-4'>
 					{messages.map((message) => (
 						<div
 							key={message.id}
@@ -112,28 +115,29 @@ export default function ChatPage() {
 							}`}
 						>
 							<div
-								className={`p-4 rounded-lg max-w-[80%] break-words ${
+								className={`p-3 rounded-2xl max-w-[80%] break-words ${
 									message.isBot
-										? "bg-white border border-gray-200 rounded-tl-none"
-										: "bg-[#B5854B] text-white rounded-tr-none"
+										? "bg-white border border-gray-200 [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+										: "bg-[#B5854B] text-white [&_a]:text-white [&_a]:underline [&_a]:hover:text-gray-200"
 								}`}
-							>
-								{message.text}
-							</div>
+								dangerouslySetInnerHTML={{
+									__html: DOMPurify.sanitize(message.text),
+								}}
+							/>
 						</div>
 					))}
 					{loading && (
 						<div className='text-center text-gray-500'>
-							<div className='inline-block bg-white px-4 py-2 rounded-lg'>
+							<div className='inline-block bg-white px-3 py-2 rounded-2xl'>
 								Loading...
 							</div>
 						</div>
 					)}
 				</div>
-				<div className='mt-4'>
-					<ChatInput onSendMessage={handleMessage} />
-				</div>
 			</main>
+			<div className='sticky bottom-0 bg-white p-4'>
+				<ChatInput onSendMessage={handleMessage} />
+			</div>
 		</div>
 	);
 }
