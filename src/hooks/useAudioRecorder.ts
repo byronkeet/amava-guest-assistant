@@ -50,7 +50,8 @@ export const useAudioRecorder = () => {
 				},
 			});
 
-			const mediaRecorder = new MediaRecorder(stream);
+			const options = { mimeType: "audio/mp4" };
+			const mediaRecorder = new MediaRecorder(stream, options);
 			mediaRecorderRef.current = mediaRecorder;
 			chunksRef.current = [];
 
@@ -80,7 +81,7 @@ export const useAudioRecorder = () => {
 			mediaRecorderRef.current.onstop = async () => {
 				try {
 					const blob = new Blob(chunksRef.current, {
-						type: "audio/wav",
+						type: "audio/mp4",
 					});
 
 					const reader = new FileReader();
