@@ -8,37 +8,14 @@ export const useAudioRecorder = () => {
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const chunksRef = useRef<Blob[]>([]);
 
-	// Helper to get supported MIME type
-	const getSupportedMimeType = () => {
-		const types = [
-			"audio/webm",
-			"audio/webm;codecs=opus",
-			"audio/mp4",
-			"audio/aac",
-			"audio/ogg",
-		];
-
-		for (const type of types) {
-			if (MediaRecorder.isTypeSupported(type)) {
-				return type;
-			}
-		}
-		return "";
-	};
-
 	useEffect(() => {
 		const checkSupport = async () => {
 			const hasMediaDevices = !!(
 				navigator.mediaDevices && navigator.mediaDevices.getUserMedia
 			);
 			const hasMediaRecorder = typeof MediaRecorder !== "undefined";
-			const hasSupportedMimeType = getSupportedMimeType() !== "";
 
-			if (
-				!hasMediaDevices ||
-				!hasMediaRecorder ||
-				!hasSupportedMimeType
-			) {
+			if (!hasMediaDevices || !hasMediaRecorder) {
 				setIsSupported(false);
 				return;
 			}
@@ -73,15 +50,8 @@ export const useAudioRecorder = () => {
 				},
 			});
 
-			const mimeType = getSupportedMimeType();
-			if (!mimeType) {
-				throw new Error("No supported audio format found");
-			}
-
-			const mediaRecorder = new MediaRecorder(stream, {
-				mimeType,
-				audioBitsPerSecond: 128000,
-			});
+			// For iOS Safari, we need to use a basic MediaRecorder without mimeType
+			const mediaRecorder = new MediaRecorder(stream);
 
 			mediaRecorderRef.current = mediaRecorder;
 			chunksRef.current = [];
@@ -92,13 +62,14 @@ export const useAudioRecorder = () => {
 				}
 			};
 
-			mediaRecorder.start(250);
+			// Request data more frequently on iOS
+			mediaRecorder.start(100);
 			setIsRecording(true);
 		} catch (error) {
 			console.error("Error starting recording:", error);
 			if (error instanceof Error) {
 				alert(
-					`Recording failed: ${error.message}. Please try using Safari on iOS or Chrome on Android.`
+					`Recording failed: ${error.message}. Please ensure you've granted microphone permissions.`
 				);
 			}
 		}
@@ -113,11 +84,7 @@ export const useAudioRecorder = () => {
 
 			mediaRecorderRef.current.onstop = async () => {
 				try {
-					const blob = new Blob(chunksRef.current, {
-						type: "audio/webm",
-					});
-
-					// Convert to base64
+					const blob = new Blob(chunksRef.current);
 					const reader = new FileReader();
 					reader.onloadend = () => {
 						const base64data = reader.result as string;
@@ -132,7 +99,6 @@ export const useAudioRecorder = () => {
 					console.error("Error processing audio:", error);
 					resolve("");
 				} finally {
-					// Clean up
 					mediaRecorderRef.current?.stream
 						.getTracks()
 						.forEach((track) => track.stop());
