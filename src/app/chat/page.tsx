@@ -9,20 +9,10 @@ export default function ChatPage() {
 		Array<{ text: string; isBot: boolean; id: string }>
 	>([]);
 	const [loading, setLoading] = useState(false);
-	const [processingMessage, setProcessingMessage] = useState<string | null>(null);
+	const [processingMessage, setProcessingMessage] = useState<string | null>(
+		null
+	);
 	const [initialized, setInitialized] = useState(false);
-
-	// Handle initial message from sessionStorage
-	useEffect(() => {
-		if (!initialized) {
-			const initialMessage = sessionStorage.getItem("initialMessage");
-			if (initialMessage) {
-				handleMessage(initialMessage, true);
-				sessionStorage.removeItem("initialMessage");
-			}
-			setInitialized(true);
-		}
-	}, [initialized]);
 
 	const handleMessage = useCallback(
 		async (message: string, isUserMessage = true) => {
@@ -45,7 +35,7 @@ export default function ChatPage() {
 				...prev,
 				{ text: message, isBot: false, id: messageId },
 			]);
-			
+
 			setLoading(true);
 			setProcessingMessage(message);
 
@@ -88,6 +78,17 @@ export default function ChatPage() {
 		},
 		[processingMessage]
 	);
+
+	useEffect(() => {
+		if (!initialized) {
+			const initialMessage = sessionStorage.getItem("initialMessage");
+			if (initialMessage) {
+				handleMessage(initialMessage, true);
+				sessionStorage.removeItem("initialMessage");
+			}
+			setInitialized(true);
+		}
+	}, [initialized, handleMessage]);
 
 	return (
 		<div className='min-h-screen flex flex-col'>
