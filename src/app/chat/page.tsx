@@ -17,6 +17,7 @@ export default function ChatPage() {
 	);
 	const [initialized, setInitialized] = useState(false);
 	const sessionIdRef = useRef(getSessionId());
+	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	const handleMessage = useCallback(
 		async (message: string, isUserMessage = true) => {
@@ -101,6 +102,14 @@ export default function ChatPage() {
 		saveMessages(messages);
 	}, [messages]);
 
+	const scrollToBottom = () => {
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+	};
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [messages, loading]);
+
 	return (
 		<div className='min-h-screen flex flex-col bg-white'>
 			<div className='sticky top-0 z-10 bg-white border-b'>
@@ -132,6 +141,7 @@ export default function ChatPage() {
 							<TypingIndicator />
 						</div>
 					)}
+					<div ref={messagesEndRef} />
 				</div>
 			</main>
 			<div className='sticky bottom-0 bg-white p-4'>
