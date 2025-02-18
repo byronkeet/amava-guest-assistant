@@ -11,7 +11,9 @@ export function LanguagePicker() {
 	return (
 		<Select
 			value={language}
-			onChange={(e) => setLanguage(e.target.value as Language)}
+			onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+				setLanguage(e.target.value as Language)
+			}
 			className='w-[100px]'
 			options={languages}
 		/>
