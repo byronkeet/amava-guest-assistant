@@ -102,23 +102,31 @@ export default function ChatPage() {
 	return (
 		<div className='min-h-screen flex flex-col'>
 			<Header />
-			<main className='flex-1 p-4'>
+			<main className='flex-1 p-4 bg-gray-50'>
 				<div className='max-w-xl mx-auto space-y-4'>
 					{messages.map((message) => (
 						<div
 							key={message.id}
-							className={`p-4 rounded-lg ${
-								message.isBot
-									? "bg-white border border-gray-200"
-									: "bg-[#B5854B] text-white"
+							className={`flex ${
+								message.isBot ? "justify-start" : "justify-end"
 							}`}
 						>
-							{message.text}
+							<div
+								className={`p-4 rounded-lg max-w-[80%] break-words ${
+									message.isBot
+										? "bg-white border border-gray-200 rounded-tl-none"
+										: "bg-[#B5854B] text-white rounded-tr-none"
+								}`}
+							>
+								{message.text}
+							</div>
 						</div>
 					))}
 					{loading && (
 						<div className='text-center text-gray-500'>
-							Loading...
+							<div className='inline-block bg-white px-4 py-2 rounded-lg'>
+								Loading...
+							</div>
 						</div>
 					)}
 				</div>
