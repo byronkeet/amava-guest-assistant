@@ -1,7 +1,7 @@
 "use client";
 
 import { Select } from "@/components/ui/select";
-import { languages } from "@/lib/translations";
+import { languages, translations } from "@/lib/translations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Language } from "@/lib/translations";
 
@@ -25,5 +25,5 @@ export function LanguagePicker() {
 }
 
 function isValidLanguage(value: string): value is Language {
-	return Object.keys(languages).includes(value);
+	return Object.keys(translations).includes(value);
 }
