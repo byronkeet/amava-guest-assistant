@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mic, Send, Square } from "lucide-react";
+import { Mic, ChevronRight, Square } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 
@@ -144,7 +144,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
 						className='rounded-full bg-[#B5854B] hover:bg-[#9a6f3f] disabled:opacity-50'
 						disabled={isProcessing}
 					>
-						<Send className='h-6 w-6' />
+						<ChevronRight className='h-4 w-4' />
 					</Button>
 				</div>
 			</div>
