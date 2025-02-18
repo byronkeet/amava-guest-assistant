@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { ChatInput } from "@/components/ChatInput";
 import { getSessionId, saveMessages, loadMessages } from "@/lib/session";
 import DOMPurify from "dompurify";
+import { TypingIndicator } from "@/components/TypingIndicator";
 
 export default function ChatPage() {
 	const [messages, setMessages] = useState<
@@ -127,10 +128,8 @@ export default function ChatPage() {
 						</div>
 					))}
 					{loading && (
-						<div className='text-center text-gray-500'>
-							<div className='inline-block bg-white px-3 py-2 rounded-2xl'>
-								Loading...
-							</div>
+						<div className='flex justify-start'>
+							<TypingIndicator />
 						</div>
 					)}
 				</div>
