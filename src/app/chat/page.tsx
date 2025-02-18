@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Header } from "@/components/layout/Header";
 import { ChatInput } from "@/components/ChatInput";
+import { getSessionId, saveMessages, loadMessages } from "@/lib/session";
 
 export default function ChatPage() {
 	const [messages, setMessages] = useState<
@@ -13,13 +14,11 @@ export default function ChatPage() {
 		null
 	);
 	const [initialized, setInitialized] = useState(false);
+	const sessionIdRef = useRef(getSessionId());
 
 	const handleMessage = useCallback(
 		async (message: string, isUserMessage = true) => {
-			// Prevent duplicate processing of the same message
-			if (processingMessage === message) {
-				return;
-			}
+			if (processingMessage === message) return;
 
 			const messageId = `${Date.now()}-${Math.random()}`;
 
@@ -45,12 +44,13 @@ export default function ChatPage() {
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify({ message }),
+					body: JSON.stringify({
+						message,
+						sessionId: sessionIdRef.current,
+					}),
 				});
 
-				if (!response.ok) {
-					throw new Error("Failed to get response");
-				}
+				if (!response.ok) throw new Error("Failed to get response");
 
 				const data = await response.json();
 				setMessages((prev) => [
@@ -81,6 +81,11 @@ export default function ChatPage() {
 
 	useEffect(() => {
 		if (!initialized) {
+			const savedMessages = loadMessages();
+			if (savedMessages.length > 0) {
+				setMessages(savedMessages);
+			}
+
 			const initialMessage = sessionStorage.getItem("initialMessage");
 			if (initialMessage) {
 				handleMessage(initialMessage, true);
@@ -89,6 +94,10 @@ export default function ChatPage() {
 			setInitialized(true);
 		}
 	}, [initialized, handleMessage]);
+
+	useEffect(() => {
+		saveMessages(messages);
+	}, [messages]);
 
 	return (
 		<div className='min-h-screen flex flex-col'>

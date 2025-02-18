@@ -8,6 +8,8 @@ const FLOWISE_API_URL =
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
+		const { sessionId } = body;
+		console.log("API received sessionId:", sessionId);
 		console.log(
 			"Received request body type:",
 			body.uploads ? "audio" : "text"
@@ -34,7 +36,11 @@ export async function POST(request: Request) {
 		// This is a text message, get response from Flowise
 		const flowiseResponse = await axios.post(FLOWISE_API_URL, {
 			question: body.message,
+			overrideConfig: {
+				sessionId,
+			},
 		});
+		console.log("Sent to Flowise with sessionId:", sessionId);
 
 		return NextResponse.json({
 			response: flowiseResponse.data.text,
