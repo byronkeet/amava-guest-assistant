@@ -8,15 +8,37 @@ export const useAudioRecorder = () => {
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const chunksRef = useRef<Blob[]>([]);
 
+	// Helper to get supported MIME type
+	const getSupportedMimeType = () => {
+		const types = [
+			"audio/webm",
+			"audio/webm;codecs=opus",
+			"audio/mp4",
+			"audio/aac",
+			"audio/ogg",
+		];
+
+		for (const type of types) {
+			if (MediaRecorder.isTypeSupported(type)) {
+				return type;
+			}
+		}
+		return "";
+	};
+
 	useEffect(() => {
-		// Check if MediaRecorder and necessary APIs are available
 		const checkSupport = async () => {
 			const hasMediaDevices = !!(
 				navigator.mediaDevices && navigator.mediaDevices.getUserMedia
 			);
 			const hasMediaRecorder = typeof MediaRecorder !== "undefined";
+			const hasSupportedMimeType = getSupportedMimeType() !== "";
 
-			if (!hasMediaDevices || !hasMediaRecorder) {
+			if (
+				!hasMediaDevices ||
+				!hasMediaRecorder ||
+				!hasSupportedMimeType
+			) {
 				setIsSupported(false);
 				return;
 			}
@@ -51,9 +73,14 @@ export const useAudioRecorder = () => {
 				},
 			});
 
-			// For iOS compatibility, we'll use a more basic configuration
+			const mimeType = getSupportedMimeType();
+			if (!mimeType) {
+				throw new Error("No supported audio format found");
+			}
+
 			const mediaRecorder = new MediaRecorder(stream, {
-				mimeType: "audio/webm",
+				mimeType,
+				audioBitsPerSecond: 128000,
 			});
 
 			mediaRecorderRef.current = mediaRecorder;
@@ -65,14 +92,13 @@ export const useAudioRecorder = () => {
 				}
 			};
 
-			// Request data every 250ms to ensure we get the audio
 			mediaRecorder.start(250);
 			setIsRecording(true);
 		} catch (error) {
 			console.error("Error starting recording:", error);
 			if (error instanceof Error) {
 				alert(
-					`Recording failed: ${error.message}. Please ensure you've granted microphone permissions.`
+					`Recording failed: ${error.message}. Please try using Safari on iOS or Chrome on Android.`
 				);
 			}
 		}
