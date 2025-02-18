@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Language } from "@/lib/translations";
 
 export interface SelectProps
-	extends React.SelectHTMLAttributes<HTMLSelectElement> {
+	extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
 	options?: { value: string; label: string }[];
+	onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(

@@ -8,14 +8,22 @@ import type { Language } from "@/lib/translations";
 export function LanguagePicker() {
 	const { language, setLanguage } = useLanguage();
 
+	const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		if (isValidLanguage(e.target.value)) {
+			setLanguage(e.target.value);
+		}
+	};
+
 	return (
 		<Select
 			value={language}
-			onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-				setLanguage(e.target.value as Language)
-			}
+			onChange={handleChange}
 			className='w-[100px]'
 			options={languages}
 		/>
 	);
+}
+
+function isValidLanguage(value: string): value is Language {
+	return Object.keys(languages).includes(value);
 }
