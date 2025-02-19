@@ -63,6 +63,16 @@ export const useAudioRecorder = () => {
 				options
 			);
 
+			// Send log to backend so it appears in Vercel logs
+			fetch("/api/logger", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					log: "Starting recording with MediaRecorder options:",
+					options,
+				}),
+			}).catch((err) => console.error("Failed to log to server:", err));
+
 			const mediaRecorder = new MediaRecorder(stream, options);
 
 			mediaRecorderRef.current = mediaRecorder;
