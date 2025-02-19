@@ -52,8 +52,8 @@ export function ChatInput({ onSendMessage, placeholder }: ChatInputProps) {
 								{
 									data: audioData,
 									type: "audio",
-									name: "audio.webm",
-									mime: "audio/webm;codecs=opus",
+									name: "audio.mp4",
+									mime: "audio/mp4",
 								},
 							],
 						}),

@@ -9,15 +9,21 @@ const openai = new OpenAI({
 
 export async function transcribeAudio(audioBase64: string): Promise<string> {
 	try {
-		// Convert base64 to Buffer
-		const audioBuffer = Buffer.from(
-			audioBase64.split(",")[1] || audioBase64,
-			"base64"
-		);
+		// Split the data URL and extract the Base64 value & MIME type
+		const [header, base64Data] = audioBase64.split(",");
+		const audioBuffer = Buffer.from(base64Data || audioBase64, "base64");
 
-		// Create a temporary file
+		// Determine the MIME type from the header and set a corresponding file extension.
+		const mimeMatch = header.match(/data:([^;]+);/);
+		const mimeType = mimeMatch ? mimeMatch[1] : "audio/webm";
+		let ext = "webm"; // default extension
+		if (mimeType === "audio/mp4") ext = "mp4";
+		else if (mimeType === "audio/mpeg") ext = "mpeg";
+		// You may add further mappings if needed.
+
+		// Create a temporary file with the detected extension
 		const tempDir = os.tmpdir();
-		const tempFilePath = path.join(tempDir, "recording.webm");
+		const tempFilePath = path.join(tempDir, `recording.${ext}`);
 
 		// Write the buffer to a temporary file
 		fs.writeFileSync(tempFilePath, audioBuffer);
