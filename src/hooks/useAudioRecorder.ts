@@ -18,6 +18,14 @@ export const useAudioRecorder = () => {
 			return;
 		}
 
+		// Disable audio recording on iOS devices due to unsupported audio recording functionality.
+		const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+		if (isIOS) {
+			console.warn("iOS detected. Audio recording is disabled.");
+			setIsSupported(false);
+			return;
+		}
+
 		// Request microphone permission to ensure the API is available
 		navigator.mediaDevices
 			.getUserMedia({ audio: true })
