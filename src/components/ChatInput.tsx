@@ -129,7 +129,7 @@ export function ChatInput({ onSendMessage, placeholder }: ChatInputProps) {
 						size='icon'
 						className='rounded-full'
 						onClick={handleMicClick}
-						disabled={!isSupported || isProcessing}
+						disabled={isProcessing}
 					>
 						{isRecording ? (
 							<Square className='h-6 w-6 text-red-500' />
