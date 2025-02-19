@@ -42,38 +42,15 @@ export const useAudioRecorder = () => {
 				audio: true,
 			});
 
-			// Detect iOS. Safari (and Chrome on iOS) might work better with default options.
-			const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+			// Try to use audio/mp4 for iOS, fallback to webm
+			const mimeType = MediaRecorder.isTypeSupported("audio/mp4")
+				? "audio/mp4"
+				: "audio/webm;codecs=opus";
 
-			const options: MediaRecorderOptions = {};
-			if (!isIOS) {
-				// For non-iOS devices, pick a MIME type manually
-				if (MediaRecorder.isTypeSupported("audio/mp4")) {
-					options.mimeType = "audio/mp4";
-				} else if (
-					MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-				) {
-					options.mimeType = "audio/webm;codecs=opus";
-				}
-				options.audioBitsPerSecond = 128000;
-			}
-
-			console.log(
-				"Starting recording with MediaRecorder options:",
-				options
-			);
-
-			// Send log to backend so it appears in Vercel logs
-			fetch("/api/logger", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					log: "Starting recording with MediaRecorder options:",
-					options,
-				}),
-			}).catch((err) => console.error("Failed to log to server:", err));
-
-			const mediaRecorder = new MediaRecorder(stream, options);
+			const mediaRecorder = new MediaRecorder(stream, {
+				mimeType,
+				audioBitsPerSecond: 128000,
+			});
 
 			mediaRecorderRef.current = mediaRecorder;
 			chunksRef.current = [];
